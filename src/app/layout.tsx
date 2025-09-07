@@ -1,13 +1,52 @@
-import type { Metadata } from 'next';
-import { AppProvider } from '@/contexts/app-provider';
-import { ThemeProvider } from '@/contexts/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
-import './globals.css';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'AgEndU',
-  description: 'Your personal task management application.',
-};
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Toaster } from "@/components/ui/toaster"
+import { useSettings, SettingsProvider } from '@/hooks/use-settings';
+import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+
+const inter = Inter({ subsets: ['latin'] })
+
+// export const metadata: Metadata = {
+//   title: 'AgEndU',
+//   description: 'Organiza tus tareas académicas con AgEndU.',
+// };
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const { settings } = useSettings();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <html lang="es">
+        <body className={inter.className}>
+          <div className="h-screen w-screen" />
+        </body>
+      </html>
+    );
+  }
+  
+  return (
+    <html lang="es" className={cn(settings.appearance)}>
+      <head>
+          <title>AgEndU</title>
+          <meta name="description" content="Organiza tus tareas académicas con AgEndU." />
+      </head>
+      <body className={inter.className}>
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+}
+
 
 export default function RootLayout({
   children,
@@ -15,26 +54,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AppProvider>
-            {children}
-            <Toaster />
-          </AppProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <SettingsProvider>
+      <AppLayout>{children}</AppLayout>
+    </SettingsProvider>
   );
 }
